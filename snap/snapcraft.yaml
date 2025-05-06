@@ -88,3 +88,4 @@ apps:
       CONFIG_DIRECTORY: $SNAP_USER_COMMON
       LOG_LEVEL: 'debug'
       NODE_ENV: 'production'
+
