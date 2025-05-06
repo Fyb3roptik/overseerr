@@ -5,7 +5,7 @@ summary: Request management and media discovery tool for the Plex ecosystem.
 description: >
   Overseerr is a free and open source software application for managing requests for your media library.
   It integrates with your existing services such as Sonarr, Radarr and Plex!
-base: core18
+base: core24
 confinement: strict
 
 architectures:
@@ -15,34 +15,34 @@ architectures:
 
 parts:
   overseerr:
-    plugin: nodejs
-    nodejs-version: '18.18.2'
-    nodejs-package-manager: 'yarn'
-    nodejs-yarn-version: v1.22.19
+    plugin: npm
+    source: .
+    npm-node-version: '18.18.2'
+    npm-include-node: true
     build-packages:
       - git
       - on arm64:
           - build-essential
           - automake
-          - python-gi
-          - python-gi-dev
+          - python3-gi
+          - python3-gi-dev
       - on armhf:
           - libatomic1
           - build-essential
           - automake
-          - python-gi
-          - python-gi-dev
-    source: .
+          - python3-gi
+          - python3-gi-dev
     override-pull: |
       snapcraftctl pull
       # Get information to determine snap grade and version
-      git config --global --add safe.directory /data/parts/overseerr/src
-      #setup yarn.rc
+      git config --global --add safe.directory "$CRAFT_PART_SRC"
+      # Setup yarn
+      npm install -g yarn@1.22.19
       echo "--install.frozen-lockfile\n--install.network-timeout 1000000" > .yarnrc
       BRANCH=$(git rev-parse --abbrev-ref HEAD)
       COMMIT=$(git rev-parse HEAD)
       COMMIT_SHORT=$(git rev-parse --short HEAD)
-      VERSION='v'$(cat package.json | grep 'version' | head -1 | sed 's/.*"\(.*\)"\,/\1/')
+      VERSION='v'$(grep -m 1 '"version"' package.json | sed 's/.*"\(.*\)"\,/\1/')
       if [ "$VERSION" = "v0.1.0" ]; then
         SNAP_VERSION=$COMMIT_SHORT
         GRADE=stable
@@ -50,7 +50,7 @@ parts:
         SNAP_VERSION=$VERSION
         GRADE=stable
       fi
-      # Write COMMIT_TAG as it is needed durring the build process
+      # Write COMMIT_TAG as it is needed during the build process
       echo $COMMIT > commit.txt
       # Print debug info for build version
       echo "{\"commitShort\": \"$COMMIT_SHORT\", \
@@ -63,22 +63,25 @@ parts:
       # Set snap version and grade
       snapcraftctl set-version "$SNAP_VERSION"
       snapcraftctl set-grade "$GRADE"
-    build-environment:
-      - PATH: '$SNAPCRAFT_PART_BUILD/node_modules/.bin:$SNAPCRAFT_PART_BUILD/../npm/bin:$PATH'
-      - CYPRESS_INSTALL_BINARY: '0'
     override-build: |
       set -e
       # Set COMMIT_TAG before the build begins
-      export COMMIT_TAG=$(cat $SNAPCRAFT_PART_BUILD/commit.txt)
-      snapcraftctl build
+      export COMMIT_TAG=$(cat $CRAFT_PART_BUILD/commit.txt)
+      # Set environment variable to skip Cypress binary installation
+      export CYPRESS_INSTALL_BINARY=0
+      # Use yarn instead of npm for build
+      yarn install
       yarn build
       # Copy files needed for staging
-      cp $SNAPCRAFT_PART_BUILD/committag.json $SNAPCRAFT_PART_INSTALL/
-      cp -R $SNAPCRAFT_PART_BUILD/.next $SNAPCRAFT_PART_INSTALL/
-      cp -R $SNAPCRAFT_PART_BUILD/dist $SNAPCRAFT_PART_INSTALL/
-      cp -R $SNAPCRAFT_PART_BUILD/node_modules $SNAPCRAFT_PART_INSTALL/
+      cp $CRAFT_PART_BUILD/committag.json $CRAFT_PART_INSTALL/
+      cp -R $CRAFT_PART_BUILD/.next $CRAFT_PART_INSTALL/
+      cp -R $CRAFT_PART_BUILD/dist $CRAFT_PART_INSTALL/
+      cp -R $CRAFT_PART_BUILD/node_modules $CRAFT_PART_INSTALL/
       # Remove .github and gitbook as it will fail snap lint
-      rm -rf $SNAPCRAFT_PART_INSTALL/.github && rm $SNAPCRAFT_PART_INSTALL/.gitbook.yaml
+      rm -rf $CRAFT_PART_INSTALL/.github 
+      if [ -f "$CRAFT_PART_INSTALL/.gitbook.yaml" ]; then
+        rm $CRAFT_PART_INSTALL/.gitbook.yaml
+      fi
     stage-packages:
       - on armhf:
           - libatomic1
@@ -87,7 +90,7 @@ parts:
 
 apps:
   daemon:
-    command: /bin/sh -c "cd $SNAP && node dist/index.js"
+    command: bin/node $SNAP/dist/index.js
     daemon: simple
     restart-condition: on-failure
     restart-delay: 5s
@@ -96,7 +99,6 @@ apps:
       - network
       - network-bind
     environment:
-      PATH: '$SNAP/usr/sbin:$SNAP/usr/bin:$SNAP/sbin:$SNAP/bin:$PATH'
       OVERSEERR_SNAP: 'True'
       CONFIG_DIRECTORY: $SNAP_USER_COMMON
       LOG_LEVEL: 'debug'
