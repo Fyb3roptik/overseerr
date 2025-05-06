@@ -5,7 +5,7 @@ summary: Request management and media discovery tool for the Plex ecosystem.
 description: >
   Overseerr is a free and open source software application for managing requests for your media library.
   It integrates with your existing services such as Sonarr, Radarr and Plex!
-base: core24
+base: core22
 confinement: strict
 
 platforms:
@@ -19,7 +19,7 @@ platforms:
 parts:
   overseerr:
     plugin: npm
-    npm-version: '18.18.2'
+    npm-node-version: '18.18.2'
     npm-include-node: true
     build-packages:
       - git
