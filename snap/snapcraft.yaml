@@ -72,7 +72,11 @@ parts:
       set -e
       # Set COMMIT_TAG before the build begins
       export COMMIT_TAG=$(cat $SNAPCRAFT_PART_BUILD/commit.txt)
+      # Install yarn and use it for the build
+      npm install -g yarn
+      # Use snapcraftctl build to perform the build operations
       snapcraftctl build
+      # Use yarn for the build
       yarn build
       # Copy files needed for staging
       cp $SNAPCRAFT_PART_BUILD/committag.json $SNAPCRAFT_PART_INSTALL/
@@ -89,7 +93,7 @@ parts:
 
 apps:
   daemon:
-    command: /bin/sh -c "cd $SNAP && node dist/index.js"
+    command: bin/node dist/index.js
     daemon: simple
     restart-condition: on-failure
     restart-delay: 5s
