@@ -8,10 +8,10 @@ description: |
 base: core24
 confinement: strict
 
-architectures:
-  - amd64
-  - arm64
-  - armhf
+platforms:
+  amd64:
+  arm64:
+  armhf:
 
 parts:
   overseerr:
