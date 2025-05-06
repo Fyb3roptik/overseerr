@@ -25,11 +25,10 @@ parts:
       - on arm64: [build-essential, automake, python3-gi, python3-gi-dev]
       - on armhf: [libatomic1, build-essential, automake, python3-gi, python3-gi-dev]
     override-pull: |
-      snapcraftctl pull
+      craftctl default
       # Get information to determine snap grade and version
       git config --global --add safe.directory "$CRAFT_PART_SRC"
-      # Setup yarn
-      npm install -g yarn@1.22.19
+      # Setup yarn config
       echo "--install.frozen-lockfile
       --install.network-timeout 1000000" > .yarnrc
       BRANCH=$(git rev-parse --abbrev-ref HEAD)
@@ -49,22 +48,26 @@ parts:
       echo "{\"commitShort\": \"$COMMIT_SHORT\", \"version\": \"$VERSION\", \"snapVersion\": \"$SNAP_VERSION\", \"snapGrade\": \"$GRADE\", \"branch\": \"$BRANCH\", \"commit\": \"$COMMIT\"}"
       echo "{\"commitTag\": \"$COMMIT\"}" > committag.json
       # Set snap version and grade
-      snapcraftctl set-version "$SNAP_VERSION"
-      snapcraftctl set-grade "$GRADE"
+      craftctl set-version "$SNAP_VERSION"
+      craftctl set-grade "$GRADE"
     build-environment:
       - CYPRESS_INSTALL_BINARY: "0"
     override-build: |
       set -e
       # Set COMMIT_TAG before the build begins
       export COMMIT_TAG=$(cat "$CRAFT_PART_BUILD/commit.txt")
-      # Use yarn instead of npm for build
+      
+      # Install and use yarn instead of npm
+      npm install -g yarn@1.22.19
       yarn install
       yarn build
+      
       # Copy files needed for staging
       cp "$CRAFT_PART_BUILD/committag.json" "$CRAFT_PART_INSTALL/"
       cp -R "$CRAFT_PART_BUILD/.next" "$CRAFT_PART_INSTALL/"
       cp -R "$CRAFT_PART_BUILD/dist" "$CRAFT_PART_INSTALL/"
       cp -R "$CRAFT_PART_BUILD/node_modules" "$CRAFT_PART_INSTALL/"
+      
       # Remove .github and gitbook as it will fail snap lint
       if [ -d "$CRAFT_PART_INSTALL/.github" ]; then
         rm -rf "$CRAFT_PART_INSTALL/.github"
