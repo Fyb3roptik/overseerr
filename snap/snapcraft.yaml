@@ -97,7 +97,7 @@ parts:
 
 apps:
   daemon:
-    command: bin/sh -c "cd $SNAP && bin/node dist/index.js"
+    command: bin/node dist/index.js
     daemon: simple
     restart-condition: on-failure
     restart-delay: 5s
