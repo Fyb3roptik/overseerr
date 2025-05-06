@@ -5,33 +5,21 @@ summary: Request management and media discovery tool for the Plex ecosystem.
 description: >
   Overseerr is a free and open source software application for managing requests for your media library.
   It integrates with your existing services such as Sonarr, Radarr and Plex!
-base: core18
+base: core24
 confinement: strict
 
 architectures:
-  - build-on: amd64
-  - build-on: arm64
-  - build-on: armhf
+  - amd64
+  - arm64
+  - armhf
 
 parts:
   overseerr:
-    plugin: nodejs
-    nodejs-version: '18.18.2'
-    nodejs-package-manager: 'yarn'
-    nodejs-yarn-version: v1.22.19
+    plugin: npm
+    npm-node-version: '18.18.2'
+    npm-include-node: true
     build-packages:
       - git
-      - on arm64:
-          - build-essential
-          - automake
-          - python-gi
-          - python-gi-dev
-      - on armhf:
-          - libatomic1
-          - build-essential
-          - automake
-          - python-gi
-          - python-gi-dev
     source: .
     override-pull: |
       snapcraftctl pull
@@ -80,14 +68,13 @@ parts:
       # Remove .github and gitbook as it will fail snap lint
       rm -rf $SNAPCRAFT_PART_INSTALL/.github && rm $SNAPCRAFT_PART_INSTALL/.gitbook.yaml
     stage-packages:
-      - on armhf:
-          - libatomic1
+      - libatomic1
     stage: [.next, ./*]
     prime: [.next, ./*]
 
 apps:
   daemon:
-    command: /bin/sh -c "cd $SNAP && node dist/index.js"
+    command: bin/node dist/index.js
     daemon: simple
     restart-condition: on-failure
     restart-delay: 5s
