@@ -18,7 +18,7 @@ platforms:
 
 parts:
   overseerr:
-    plugin: nodejs
+    plugin: npm
     npm-version: '18.18.2'
     npm-include-node: true
     build-packages:
