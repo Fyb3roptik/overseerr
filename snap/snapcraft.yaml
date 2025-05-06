@@ -48,8 +48,8 @@ parts:
       echo "{\"commitShort\": \"$COMMIT_SHORT\", \"version\": \"$VERSION\", \"snapVersion\": \"$SNAP_VERSION\", \"snapGrade\": \"$GRADE\", \"branch\": \"$BRANCH\", \"commit\": \"$COMMIT\"}"
       echo "{\"commitTag\": \"$COMMIT\"}" > committag.json
       # Set snap version and grade
-      craftctl set-version "$SNAP_VERSION"
-      craftctl set-grade "$GRADE"
+      craftctl set version="$SNAP_VERSION"
+      craftctl set grade="$GRADE"
     build-environment:
       - CYPRESS_INSTALL_BINARY: "0"
     override-build: |
@@ -91,7 +91,7 @@ apps:
       - network
       - network-bind
     environment:
-      OVERSEERR_SNAP: "True"
+      OVERSEERR_SNAP: True
       CONFIG_DIRECTORY: $SNAP_USER_COMMON
-      LOG_LEVEL: "debug"
-      NODE_ENV: "production"
+      LOG_LEVEL: debug
+      NODE_ENV: production
