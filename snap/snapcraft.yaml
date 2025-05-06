@@ -33,7 +33,7 @@ parts:
           - python-gi-dev
     source: .
     override-pull: |
-      craftctl pull
+      craftctl default
       # Get information to determine snap grade and version
       git config --global --add safe.directory /data/parts/overseerr/src
       #setup yarn.rc
@@ -60,8 +60,8 @@ parts:
       \"commit\": \"$COMMIT\"}"
       echo "{\"commitTag\": \"$COMMIT\"}" > committag.json
       # Set snap version and grade
-      craftctl set-version "$SNAP_VERSION"
-      craftctl set-grade "$GRADE"
+      craftctl set version="$SNAP_VERSION"
+      craftctl set grade="$GRADE"
     build-environment:
       - PATH: '$SNAPCRAFT_PART_BUILD/node_modules/.bin:$SNAPCRAFT_PART_BUILD/../npm/bin:$PATH'
       - CYPRESS_INSTALL_BINARY: '0'
