@@ -79,7 +79,7 @@ parts:
 
 apps:
   daemon:
-    command: bin/node "$SNAP/dist/index.js"
+    command: bin/node $SNAP/dist/index.js
     daemon: simple
     restart-condition: on-failure
     restart-delay: 5s
